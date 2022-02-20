@@ -1,18 +1,57 @@
 <?php
+require_once "instructions.php";
 define("HEADER", ".ippcode22");
 
 
 class CodeParser {
-    public $instructions;
     private $header;
+    private $row;
+    private $dom_tree;
+    private $xml_root;
+    public $stats;
 
     function __construct() {
-        $this->instructions = array();
         $this->header = false;
+        $this->row = 0;
+        $this->stats = null;
+
+        $this->dom_tree = new DOMDocument('1.0', 'UTF-8');
+        $this->dom_tree->formatOutput = true;
+        $this->xml_root = $this->dom_tree->createElement("program");
+        $this->xml_root->setAttribute("language", "IPPcode22");
+        $this->dom_tree->appendChild($this->xml_root);
+    }
+
+    function check_instruction_parts($instruction_parts, $expected_num){
+        if(count($instruction_parts) != $expected_num){
+            fwrite(STDERR,"ERROR: Unexpected number of operands! ROW:".$this->row."\n");
+            exit(LEX_SYN_ERROR);
+        }
     }
 
     function parse_instruction($line){
-        echo "$line\n";
+        $instruction = null;
+        $instruction_parts = preg_split("/\s+/", $line);
+        $operation_code = strtoupper($instruction_parts[0]);
+        if(in_array($operation_code, INSTRUCTIONS)){
+            $this->check_instruction_parts($instruction_parts, 1);
+            $instruction = new Instruction($this->row, $operation_code);
+        } elseif(in_array($operation_code, INSTRUCTIONS_ONE_ARG)){
+            $this->check_instruction_parts($instruction_parts, 2);
+            $instruction = new InstructionOneArg($this->row, $operation_code, $instruction_parts[1]);
+        } elseif(in_array($operation_code, INSTRUCTIONS_TWO_ARGS)){
+            $this->check_instruction_parts($instruction_parts, 3);
+            $instruction = new InstructionTwoArgs($this->row, $operation_code, $instruction_parts[1], $instruction_parts[2]);
+        } elseif(in_array($operation_code, INSTRUCTIONS_THREE_ARGS)){
+            $this->check_instruction_parts($instruction_parts, 4);
+            $instruction = new InstructionThreeArgs($this->row, $operation_code, $instruction_parts[1], $instruction_parts[2], $instruction_parts[3]);
+        }else{
+            fwrite(STDERR,"ERROR: Unexpected operation code! ROW:".$this->row."\n");
+            exit(OPERATION_CODE_ERROR);
+        }
+        $instruction->update_stats($this->stats);
+        $instruction->validate_instruction();
+        $instruction->as_xml($this->dom_tree, $this->xml_root);
     }
 
     function remove_comment($line){
@@ -35,10 +74,17 @@ class CodeParser {
         }
     }
 
+    function generate_xml(){
+        echo $this->dom_tree->saveXML();
+    }
+
     function parse() {
         $line = fgets(STDIN);
+        $this->row++;
+
         if(!$line) { // Konec souboru nebo prázdný soubor
             $this->is_missing_header(); 
+            $this->generate_xml();
             return;
         }
         
@@ -52,6 +98,8 @@ class CodeParser {
 
         if(!$this->header && strcasecmp(HEADER, $line) == 0){
             $this->header = true;
+            $this->parse();
+            return;
         } 
         $this->is_missing_header();
         $this->parse_instruction($line);

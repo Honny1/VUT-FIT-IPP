@@ -9,5 +9,5 @@ $arg_parser->parse();
 
 $code_parser = new CodeParser();
 $code_parser->parse();
-echo "end";
+
 ?>
