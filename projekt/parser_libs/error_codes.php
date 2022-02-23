@@ -5,7 +5,7 @@ define("OUTPUT_FILE_OPEN_ERROR", 12);
 
 define("HEADER_ERROR", 21);
 define("OPERATION_CODE_ERROR", 22);
-define("LEX_SYN_ERROR", 12);
+define("LEX_SYN_ERROR", 23);
 
 define("INTERNAL_ERROR", 99);
 

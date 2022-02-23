@@ -25,8 +25,7 @@ abstract class AbstractInstruction {
     abstract public function validate_instruction();
     abstract public function as_xml($dom_tree, $xml_root);
 
-    public function update_stats($stats) {}
-
+    abstract public function update_stats($stats);
 
     public function validate_var($arg) {
         if (preg_match($this->regex_var, $arg)) return;
@@ -101,6 +100,10 @@ class Instruction extends AbstractInstruction {
         }
     }
 
+    public function update_stats($stats) {
+        $stats->add_loc();
+    }
+
     public function as_xml($dom_tree, $xml_root) {
         $instruction = $dom_tree->createElement("instruction");
         $xml_root->appendChild($instruction);
@@ -117,6 +120,14 @@ class InstructionOneArg extends AbstractInstruction {
         $this->row = $row;
         $this->operation_code = $operation_code;
         $this->arg1 = $arg1;
+    }
+
+    public function update_stats($stats) {
+        $stats->add_loc();
+        if ($this->operation_code == "LABEL")
+            $stats->add_label($this->arg1);
+        if ($this->operation_code == "JUMP")
+            $stats->add_jump($this->arg1);
     }
 
     public function validate_instruction() {
@@ -182,6 +193,10 @@ class InstructionTwoArgs extends AbstractInstruction {
         $this->arg2 = $arg2;
     }
 
+    public function update_stats($stats) {
+        $stats->add_loc();
+    }
+
     public function validate_instruction() {
         switch ($this->operation_code) {
             case 'MOVE':
@@ -243,6 +258,14 @@ class InstructionThreeArgs extends AbstractInstruction {
         $this->arg1 = $arg1;
         $this->arg2 = $arg2;
         $this->arg3 = $arg3;
+    }
+
+    public function update_stats($stats) {
+        $stats->add_loc();
+        if ($this->operation_code == "JUMPIFEQ")
+            $stats->add_jump($this->arg1);
+        if ($this->operation_code == "JUMPIFNEQ")
+            $stats->add_jump($this->arg1);
     }
 
     public function validate_instruction() {

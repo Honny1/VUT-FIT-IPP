@@ -1,5 +1,6 @@
 <?php
 require_once "instructions.php";
+require_once "stats.php";
 define("HEADER", ".ippcode22");
 
 
@@ -13,7 +14,7 @@ class CodeParser {
     function __construct() {
         $this->header = false;
         $this->row = 0;
-        $this->stats = null;
+        $this->stats = new Stats();
 
         $this->dom_tree = new DOMDocument('1.0', 'UTF-8');
         $this->dom_tree->formatOutput = true;
@@ -49,13 +50,14 @@ class CodeParser {
             fwrite(STDERR,"ERROR: Unexpected operation code! ROW:".$this->row."\n");
             exit(OPERATION_CODE_ERROR);
         }
-        $instruction->update_stats($this->stats);
         $instruction->validate_instruction();
+        $instruction->update_stats($this->stats);
         $instruction->as_xml($this->dom_tree, $this->xml_root);
     }
 
     function remove_comment($line){
         if (str_contains($line, '#')){
+            $this->stats->add_comments();
             $line = strstr($line, '#', true);
             return $this->trim_line($line);
         }
@@ -77,6 +79,10 @@ class CodeParser {
     function generate_xml(){
         echo $this->dom_tree->saveXML();
     }
+    function end_of_file(){
+        $this->generate_xml();
+        $this->stats->count_bad_or_fw_jumps();
+    }
 
     function parse() {
         $line = fgets(STDIN);
@@ -84,7 +90,7 @@ class CodeParser {
 
         if(!$line) { // Konec souboru nebo prázdný soubor
             $this->is_missing_header(); 
-            $this->generate_xml();
+            $this->end_of_file();
             return;
         }
         
