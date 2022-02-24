@@ -11,7 +11,7 @@ for i in  $(find . -iname "*.src"); do
 	php "$PARSER" < "$i" > "$i.out" 2>err.txt
 	RETURNED=$?
 	if [ "$RETURNED" == "0" ]; then
-		java -jar ../../jexamxml/jexamxml.jar "$i.out" "$OUT" diffs.xml ../../options > xmldiff.log
+		java -jar ../../jexamxml/jexamxml.jar "$i.out" "$OUT" diffs.xml ../../options
 		DIFFOK=$?
 		if [ "$DIFFOK" == "0" ]; then
 			rm "$i.out"

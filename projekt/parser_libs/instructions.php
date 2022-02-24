@@ -12,7 +12,7 @@ abstract class AbstractInstruction {
     public $row;
     
     public $regex_int = "/^int@[+-]?[0-9]+$/";
-    public $regex_str = "/^string@([^\\\r\n\t\f\v ]|\\\d\d\d)*$/";
+    public $regex_str = "/^string@([^\\\\\r\n\t\f\v ]|\\\\\d\d\d)*$/";
     public $regex_bool = "/^bool@(true|false)$/";
     public $regex_nil = "/^nil@nil$/";
 
@@ -20,7 +20,7 @@ abstract class AbstractInstruction {
 
     public $regex_types = "/^(int|string|bool)$/";
 
-    public $regex_label = "/^[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*/";
+    public $regex_label = "/^[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$/";
 
     abstract public function validate_instruction();
     abstract public function as_xml($dom_tree, $xml_root);
