@@ -35,7 +35,7 @@ class Stats {
     }
 
     function add_label($label){
-        if(in_array("L_".$label, $this->jumps_and_labels)){
+        if(!in_array("L_".$label, $this->jumps_and_labels)){
             $this->labels++;
             array_push($this->jumps_and_labels, "L_".$label);
         }

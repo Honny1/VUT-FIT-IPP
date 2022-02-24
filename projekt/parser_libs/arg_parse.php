@@ -50,7 +50,7 @@ class ArgParser {
                 $bad_args = array_diff($bad_args, array("--stats"));
         }
         foreach ($bad_args as $key => $value)
-            if(str_starts_with($value, "--stats="))
+            if(str_starts_with($value, "--stats=") || str_starts_with($value, "--stats"))
                 unset($bad_args[$key]);
         if(in_array($this->argv[0], $bad_args))
             if (($key = array_search($this->argv[0], $bad_args)) !== false)
