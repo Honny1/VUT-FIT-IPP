@@ -102,6 +102,8 @@ class Instruction extends AbstractInstruction {
 
     public function update_stats($stats) {
         $stats->add_loc();
+        if ($this->operation_code == "RETURN")
+            $stats->add_return_jump();
     }
 
     public function as_xml($dom_tree, $xml_root) {
@@ -126,7 +128,7 @@ class InstructionOneArg extends AbstractInstruction {
         $stats->add_loc();
         if ($this->operation_code == "LABEL")
             $stats->add_label($this->arg1);
-        if ($this->operation_code == "JUMP")
+        if ($this->operation_code == "JUMP" || $this->operation_code == "CALL")
             $stats->add_jump($this->arg1);
     }
 

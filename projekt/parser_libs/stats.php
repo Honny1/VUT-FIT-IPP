@@ -41,6 +41,11 @@ class Stats {
         }
     }
 
+    function add_return_jump(){
+        $this->jumps++;
+        $this->backjumps++;
+    }
+
     function add_jump($jump){
         $this->jumps++;
         array_push($this->jumps_and_labels, "J_".$jump);
