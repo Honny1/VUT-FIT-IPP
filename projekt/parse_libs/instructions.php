@@ -11,29 +11,29 @@ abstract class AbstractInstruction {
     static public $num = 0;
     public $row;
     
-    public $regex_int = "/^int@[+-]?[0-9]+$/";
-    public $regex_str = "/^string@([^\\\\\r\n\t\f\v ]|\\\\\d\d\d)*$/";
-    public $regex_bool = "/^bool@(true|false)$/";
-    public $regex_nil = "/^nil@nil$/";
+    private $regex_int = "/^int@[+-]?[0-9]+$/";
+    private $regex_str = "/^string@([^\\\\\r\n\t\f\v ]|\\\\\d\d\d)*$/";
+    private $regex_bool = "/^bool@(true|false)$/";
+    private $regex_nil = "/^nil@nil$/";
 
-    public $regex_var = "/^(LF|GF|TF)@[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$/";
+    private $regex_var = "/^(LF|GF|TF)@[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$/";
 
-    public $regex_types = "/^(int|string|bool)$/";
+    private $regex_types = "/^(int|string|bool)$/";
 
-    public $regex_label = "/^[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$/";
+    private $regex_label = "/^[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$/";
 
     abstract public function validate_instruction();
     abstract public function as_xml($dom_tree, $xml_root);
 
     abstract public function update_stats($stats);
 
-    public function validate_var($arg) {
+    protected function validate_var($arg) {
         if (preg_match($this->regex_var, $arg)) return;
         fwrite(STDERR, "ERROR: Bad var! ROW: " . $this->row . "\n");
         exit(LEX_SYN_ERROR);
     }
 
-    public function validate_symb($arg) {
+    protected function validate_symb($arg) {
         if (preg_match($this->regex_int, $arg) ||
             preg_match($this->regex_str, $arg) ||
             preg_match($this->regex_bool, $arg) ||
@@ -44,13 +44,13 @@ abstract class AbstractInstruction {
         exit(LEX_SYN_ERROR);
     }
 
-    public function validate_type($arg) {
+    protected function validate_type($arg) {
         if (preg_match($this->regex_types, $arg)) return;
         fwrite(STDERR, "ERROR: Bad type! ROW: " . $this->row . "\n");
         exit(LEX_SYN_ERROR);
     }
 
-    public function validate_label($arg) {
+    protected function validate_label($arg) {
         if (preg_match($this->regex_label, $arg)) return;
         fwrite(STDERR, "ERROR: Bad label! ROW: " . $this->row . "\n");
         exit(LEX_SYN_ERROR);

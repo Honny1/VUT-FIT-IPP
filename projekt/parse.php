@@ -1,9 +1,9 @@
 <?php
 ini_set('display_errors', 'stderr');
 
-require_once "parser_libs/error_codes.php";
-require_once "parser_libs/arg_parse.php";
-require_once "parser_libs/code_parser.php";
+require_once "parse_libs/error_codes.php";
+require_once "parse_libs/arg_parse.php";
+require_once "parse_libs/code_parser.php";
 
 $arg_parser = new ArgParser($argc, $argv);
 $stats_args = $arg_parser->parse();

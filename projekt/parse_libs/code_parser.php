@@ -11,7 +11,7 @@ class CodeParser {
     private $xml_root;
     public $stats;
 
-    function __construct() {
+    public function __construct() {
         $this->header = false;
         $this->row = 0;
         $this->stats = new Stats();
@@ -23,14 +23,14 @@ class CodeParser {
         $this->dom_tree->appendChild($this->xml_root);
     }
 
-    function check_instruction_parts($instruction_parts, $expected_num){
+    private function check_instruction_parts($instruction_parts, $expected_num){
         if(count($instruction_parts) != $expected_num){
             fwrite(STDERR,"ERROR: Unexpected number of operands! ROW:".$this->row."\n");
             exit(LEX_SYN_ERROR);
         }
     }
 
-    function parse_instruction($line){
+    private function parse_instruction($line){
         $instruction = null;
         $instruction_parts = preg_split("/\s+/", $line);
         $operation_code = strtoupper($instruction_parts[0]);
@@ -55,36 +55,32 @@ class CodeParser {
         $instruction->as_xml($this->dom_tree, $this->xml_root);
     }
 
-    function remove_comment($line){
+    private function remove_comment($line){
         if (str_contains($line, '#')){
             $this->stats->add_comments();
             $line = strstr($line, '#', true);
-            return $this->trim_line($line);
+            return trim($line);
         }
         return $line;
     }
-
-    function trim_line($line){
-        $line = trim($line);
-        return $line;
-    }
     
-    function is_missing_header(){
+    private function is_missing_header(){
         if(!$this->header){
             fwrite(STDERR,"ERROR: Missing header!\n");
             exit(HEADER_ERROR);
         }
     }
 
-    function generate_xml(){
+    private function generate_xml(){
         echo $this->dom_tree->saveXML();
     }
-    function end_of_file(){
+    
+    private function end_of_file(){
         $this->generate_xml();
         $this->stats->count_bad_or_fw_jumps();
     }
 
-    function parse() {
+    public function parse() {
         $line = fgets(STDIN);
         $this->row++;
 
@@ -94,7 +90,7 @@ class CodeParser {
             return;
         }
         
-        $line = $this->trim_line($line);
+        $line = trim($line);
         $line = $this->remove_comment($line);
 
         if ($line == null){ 

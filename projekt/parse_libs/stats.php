@@ -13,7 +13,7 @@ class Stats {
     public $backjumps;
     public $badjumps;
 
-    function __construct() {
+    public function __construct() {
         $this->loc = 0;
         $this->comments = 0;
         $this->labels = 0;
@@ -26,27 +26,27 @@ class Stats {
         $this->badjumps = 0;
     }
 
-    function add_loc(){
+    public function add_loc(){
         $this->loc++;
     }
 
-    function add_comments(){
+    public function add_comments(){
         $this->comments++;
     }
 
-    function add_label($label){
+    public function add_label($label){
         if(!in_array("L_".$label, $this->jumps_and_labels)){
             $this->labels++;
             array_push($this->jumps_and_labels, "L_".$label);
         }
     }
 
-    function add_return_jump(){
+    public function add_return_jump(){
         $this->jumps++;
         $this->backjumps++;
     }
 
-    function add_jump($jump){
+    public function add_jump($jump){
         $this->jumps++;
         array_push($this->jumps_and_labels, "J_".$jump);
         if(in_array("L_".$jump, $this->jumps_and_labels)){
@@ -56,7 +56,7 @@ class Stats {
         }
     }
 
-    function count_bad_or_fw_jumps(){
+    public function count_bad_or_fw_jumps(){
         foreach ($this->bad_or_fw_jumps as $jump) {
             if(in_array("L_".$jump, $this->jumps_and_labels)){
                 $this->fwjumps++;            
@@ -66,7 +66,7 @@ class Stats {
         }
     }
     
-    function save_stats($where_and_what){
+    public function save_stats($where_and_what){
         foreach ($where_and_what as $file_name => $stats) {
             $file = fopen($file_name, "w") or exit(OUTPUT_FILE_OPEN_ERROR);
             $data = "";

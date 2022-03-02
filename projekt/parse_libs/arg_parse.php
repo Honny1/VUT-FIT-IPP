@@ -36,7 +36,7 @@ class ArgParser {
         echo sprintf($message, $this->argv[0]);
     }
 
-    function filter_args(){
+    private function filter_args(){
         $bad_args = array_diff($this->argv, ARGS);
         if(array_key_exists("stats", $this->options) && is_array($this->options["stats"])){
             foreach ($bad_args as $key => $value)
@@ -73,7 +73,7 @@ class ArgParser {
         return $this->validate_stats_parameters();
     }
 
-    function validate_stats_parameters(){
+    private function validate_stats_parameters(){
         $args_ = array_diff($this->argv, ["parse.php"]);
         $out = array();
         $file = null;
