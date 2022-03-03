@@ -8,7 +8,7 @@ IS_IT_OK_DIR=../is_it_ok_test_dir
 pack: clean $(ZIP_FILE_NAME).zip
 
 $(ZIP_FILE_NAME).zip:
-	zip -D $(ZIP_FILE_NAME).zip *.php *.md
+	zip -D $(ZIP_FILE_NAME).zip parse_libs/*.php *.php *.md rozsireni
 
 is_it_ok: clean $(ZIP_FILE_NAME).zip
 	$(IS_IT_OK_SCRIPT) $(ZIP_FILE_NAME).zip $(IS_IT_OK_DIR)
