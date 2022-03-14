@@ -36,7 +36,7 @@ class ArgParser {
         echo sprintf($message, $this->argv[0]);
     }
 
-    private function filter_args(){
+    private function get_invalid_args(){
         $bad_args = array_diff($this->argv, ARGS);
         if(array_key_exists("stats", $this->options) && is_array($this->options["stats"])){
             foreach ($bad_args as $key => $value)
@@ -60,7 +60,7 @@ class ArgParser {
 
     function parse() {
         $this->options = getopt(SHORT_PARAMETERS, LONG_PARAMETERS);
-        $bad_args = $this->filter_args();
+        $bad_args = $this->get_invalid_args();
         if (array_key_exists("help", $this->options)){
             $this->help();
             exit(EXIT_OK);
@@ -73,6 +73,9 @@ class ArgParser {
         return $this->validate_stats_parameters();
     }
 
+    /*
+     *  This Function validates stats parameters and generates an array with information which stats save where.
+    */
     private function validate_stats_parameters(){
         $args_ = array_diff($this->argv, ["parse.php"]);
         $out = array();
