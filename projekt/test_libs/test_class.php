@@ -30,6 +30,8 @@ abstract class AbstractTest {
         $this->expect_rc = intval(trim(file_get_contents($this->rc)));
         $this->std_out = $path . ".TMP_std_out";
         $this->std_err = $path . ".TMP_std_err";
+        $this->std_out_diff = $path . ".TMP_std_out_diff";
+        $this->std_out_int = $path . ".TMP_std_out_int";
         $this->error_msg = "";
         
     }
@@ -57,8 +59,9 @@ abstract class AbstractTest {
     }
 
     protected function test_int($code_in) {
+        $out = $code_in == $this->std_out ? $this->std_out_int: $this->std_out;
         $command_pattern = PY . " \"%s\" --input=\"%s\" --source=\"%s\" > \"%s\" 2> \"%s\"";
-        $interpretr_command = sprintf($command_pattern, $this->arg_parser->int_script, $this->in, $code_in, $this->std_out, $this->std_err);
+        $interpretr_command = sprintf($command_pattern, $this->arg_parser->int_script, $this->in, $code_in, $out, $this->std_err);
         $output = null;
         exec($interpretr_command, $output, $this->returned_rc);
         if($this->returned_rc == $this->expect_rc)
@@ -67,8 +70,9 @@ abstract class AbstractTest {
 
     protected function diff_int_out() {
         if($this->returned_rc != 0) return;
-        $command_pattern = "diff -u -c 1 \"%s\" \"%s\" > \"%s\" 2> \"%s\"";
-        $diff_command = sprintf($command_pattern, $this->std_out, $this->out, $this->std_out, $this->std_err);
+        $in = file_exists($this->std_out_int)? $this->std_out_int: $this->std_out;
+        $command_pattern = "diff -u \"%s\" \"%s\" > \"%s\" 2> \"%s\"";
+        $diff_command = sprintf($command_pattern, $in, $this->out, $this->std_out_diff, $this->std_err);
         $output = null;
         exec($diff_command, $output, $this->returned_rc);
         if($this->returned_rc != 0)
@@ -76,8 +80,10 @@ abstract class AbstractTest {
     }
 
     public function clean() {
-        unlink($this->std_out);
-        unlink($this->std_err);
+        if (file_exists($this->std_out)) unlink($this->std_out);
+        if (file_exists($this->std_err)) unlink($this->std_err);
+        if (file_exists($this->std_out_diff)) unlink($this->std_out_diff);
+        if (file_exists($this->std_out_int)) unlink($this->std_out_int);
     }
 
     public function add_to_html($dom_tree, $html_root) {
@@ -172,6 +178,18 @@ abstract class AbstractTest {
         
         $details->appendChild($details_received_out);
 
+        if(file_exists($this->std_out_diff)) {
+            $details_received_out = $dom_tree->createElement("details");
+            $domAttribute = $dom_tree->createAttribute('open');
+            if($this->result == "FAIL") $details_received_out->appendChild($domAttribute);
+
+            $summary_received_out = $dom_tree->createElement("summary", "Received diff:");
+            $details_received_out->appendChild($summary_received_out);
+            $pre_received_out = $dom_tree->createElement("pre", file_get_contents($this->std_out_diff));
+            $details_received_out->appendChild($pre_received_out);
+
+            $details->appendChild($details_received_out);
+        }
 
         $details_in_data = $dom_tree->createElement("details");
         $domAttribute = $dom_tree->createAttribute('open');
