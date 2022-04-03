@@ -4,3 +4,5 @@ projekt/internal_tests/ipp-2022-tests.zip
 ipp-2022-tests
 tests
 xmldiff.log
+__pycache__/
+
