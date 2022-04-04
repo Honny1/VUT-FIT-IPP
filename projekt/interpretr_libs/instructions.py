@@ -217,7 +217,7 @@ class InstructionLT(Instruction):
     def exec(self, engine):
         symbol1, symbol2 = self._get_operands_for_compare_instruction(engine)
 
-        result = symbol1.value < symbol2.value
+        result = symbol1 < symbol2
         self._save_symbol(engine, Symbol(ArgDataType.BOOL, result))
 
 
@@ -227,7 +227,7 @@ class InstructionGT(Instruction):
     def exec(self, engine):
         symbol1, symbol2 = self._get_operands_for_compare_instruction(engine)
 
-        result = symbol1.value > symbol2.value
+        result = symbol1 > symbol2
         self._save_symbol(engine, Symbol(ArgDataType.BOOL, result))
 
 

@@ -1,11 +1,13 @@
 import argparse
 from sys import stdin, stderr, argv
-from interpretr_libs.error_codes import PARAMETR_ERROR
+from interpretr_libs.error_codes import PARAMETR_ERROR, INPUT_FILE_OPEN_ERROR
 
 
 class ArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         self.print_usage(stderr)
+        if "[Errno 2]" in message:
+            self.exit(INPUT_FILE_OPEN_ERROR, f"ERROR: {message}\n")
         self.exit(PARAMETR_ERROR, f"ERROR: {message}\n")
 
 

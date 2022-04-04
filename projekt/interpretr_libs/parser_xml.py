@@ -3,7 +3,7 @@ from lxml import etree
 from interpretr_libs.expections import UnexpectedXMLStructureError
 
 from interpretr_libs.instruction_args import (
-        ArgDataType, ArgType, ArgFrame, Label, Symbol, TypeArg, Var
+        ArgDataType, ArgType, Label, Symbol, TypeArg, Var
     )
 from interpretr_libs.instruction_map import OPCODE_TO_INSTRUCTION
 
@@ -91,8 +91,6 @@ class ParserXML():
         arg_value = "" if arg.text is None else arg.text
 
         if arg_type == ArgType.LABEL:
-            if re.match(r"^[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$", arg_value) is None:
-                raise UnexpectedXMLStructureError("Bad Label format!")
             return Label(arg_value)
 
         if arg_type == ArgType.TYPE:
@@ -105,8 +103,6 @@ class ParserXML():
             raise UnexpectedXMLStructureError
 
         if arg_type == ArgDataType.NIL:
-            if arg_value != ArgDataType.NIL:
-                raise UnexpectedXMLStructureError("Bad Nil value!")
             return Symbol(ArgDataType.NIL, None)
 
         if arg_type == ArgDataType.BOOL:
@@ -122,16 +118,10 @@ class ParserXML():
                 raise UnexpectedXMLStructureError("Bad int format!")
 
         if arg_type == ArgDataType.STR:
-            if "#" in arg_value:
-                raise UnexpectedXMLStructureError("String cant contain \"#\"!")
             return Symbol(ArgDataType.STR, self.clean_string(arg_value))
 
         if arg_type == ArgType.VAR:
             frame, value = arg_value.split("@")
-            if frame != ArgFrame.GF and frame != ArgFrame.LF and frame != ArgFrame.TF:
-                raise UnexpectedXMLStructureError("Bad frame format!")
-            if re.match(r"^[a-zA-Z_\-$&%\*\!\?][\w_\-$&%\*\!\?]*$", value) is None:
-                raise UnexpectedXMLStructureError("Bad var value!")
             return Var(value, frame)
 
         raise UnexpectedXMLStructureError(f"Bad arg! Type: {arg_type} Value: {arg_value}")

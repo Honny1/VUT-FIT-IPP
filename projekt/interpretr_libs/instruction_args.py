@@ -64,5 +64,11 @@ class Symbol(Argument):
     def __eq__(self, _o):
         return self.value == _o.value and self.data_type == _o.data_type
 
+    def __lt__(self, _o):
+        return self.value < _o.value
+
+    def __gt__(self, _o):
+        return self.value > _o.value
+
     def __repr__(self):
         return f"SYMBOL: {self.data_type}, {self.value}"
