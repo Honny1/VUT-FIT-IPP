@@ -5,7 +5,7 @@ from interpretr_libs.instructions import (
     InstructionOR, InstructionNOT, InstructionINT2CHAR,
     InstructionSTRING2INT, InstructionJUMP
 )
-from interpretr_libs.instruction_args import ArgDataType, Symbol
+from interpretr_libs.instruction_args import ArgDataType, Symbol, ArgIndexes
 from interpretr_libs.expections import BadDataType, MissingValueError, BadStringOperation
 
 
@@ -110,10 +110,11 @@ class InstructionNOTS(InstructionNOT):
 
     def exec(self, engine):
         if not engine.stack_data:
-            raise MissingValueError("STACK COMPARE OPERATION: empty stack!")
+            raise MissingValueError(
+                f"STACK COMPARE OPERATION: empty stack! Instruction order: {self.order}")
         symbol = engine.stack_data.pop()
         if symbol.data_type != ArgDataType.BOOL:
-            raise BadDataType("NOTS: Support just BOOL!")
+            raise BadDataType(f"NOTS: Support just BOOL! Instruction order: {self.order}")
 
         result = not symbol.value
         self._save_symbol_stack(engine, Symbol(ArgDataType.BOOL, result))
@@ -124,14 +125,17 @@ class InstructionINT2CHARS(InstructionINT2CHAR):
 
     def exec(self, engine):
         if not engine.stack_data:
-            raise MissingValueError("INT2CHARS: empty stack!")
+            raise MissingValueError(f"INT2CHARS: empty stack! Instruction order: {self.order}")
         symbol = engine.stack_data.pop()
         if symbol.data_type != ArgDataType.INT:
-            raise BadDataType("INT2CHARS: Support just INT!")
+            raise BadDataType(f"INT2CHARS: Support just INT! Instruction order: {self.order}")
         try:
             self._save_symbol_stack(engine, Symbol(ArgDataType.STR, chr(symbol.value)))
         except Exception:
-            raise BadStringOperation(f"INT2CHARS: Bad int to char corversion: {symbol.value}")
+            raise BadStringOperation((
+                f"INT2CHARS: Bad int to char corversion: {symbol.value},"
+                f" Instruction order: {self.order}"
+            ))
 
 
 class InstructionSTRING2INTS(InstructionSTRING2INT):
@@ -139,15 +143,15 @@ class InstructionSTRING2INTS(InstructionSTRING2INT):
 
     def exec(self, engine):
         if not engine.stack_data:
-            raise MissingValueError("STRI2INTS: empty stack!")
+            raise MissingValueError(f"STRI2INTS: empty stack! Instruction order: {self.order}")
         symbol2 = engine.stack_data.pop()
 
         if not engine.stack_data:
-            raise MissingValueError("STRI2INTS: empty stack!")
+            raise MissingValueError(f"STRI2INTS: empty stack! Instruction order: {self.order}")
         symbol1 = engine.stack_data.pop()
 
         if symbol1.data_type != ArgDataType.STR or symbol2.data_type != ArgDataType.INT:
-            raise BadDataType("STRI2INT: Bad type of operands!")
+            raise BadDataType(f"STRI2INT: Bad type of operands! Instruction order: {self.order}")
 
         try:
             self._save_symbol_stack(
@@ -155,20 +159,28 @@ class InstructionSTRING2INTS(InstructionSTRING2INT):
                 Symbol(ArgDataType.INT, ord(symbol1.value[symbol2.value]))
             )
         except IndexError:
-            raise BadStringOperation("STRI2INT: Index out of the range!")
+            raise BadStringOperation(
+                f"STRI2INT: Index out of the range! Instruction order: {self.order}"
+            )
         except Exception:
-            raise BadStringOperation(f"Bad int to char corversion: {symbol1.value[symbol2.value]}")
+            raise BadStringOperation((
+                f"Bad int to char corversion: {symbol1.value[symbol2.value]}, "
+                f"Instruction order: {self.order}"
+            ))
 
 
 class InstructionJUMPIFEQS(InstructionJUMP):
 
     def exec(self, engine):
+        label = self.args[ArgIndexes.ARG1].value
+        self._check_if_label_exist(label, engine)
+
         if not engine.stack_data:
-            raise MissingValueError("JUMPIFEQS: empty stack!")
+            raise MissingValueError(f"JUMPIFEQS: empty stack! Instruction order: {self.order}")
         symbol2 = engine.stack_data.pop()
 
         if not engine.stack_data:
-            raise MissingValueError("JUMPIFEQS: empty stack!")
+            raise MissingValueError(f"JUMPIFEQS: empty stack! Instruction order: {self.order}")
         symbol1 = engine.stack_data.pop()
         is_nil = symbol1.data_type == ArgDataType.NIL or symbol2.data_type == ArgDataType.NIL
         if symbol1.data_type == symbol2.data_type or is_nil:
@@ -176,18 +188,21 @@ class InstructionJUMPIFEQS(InstructionJUMP):
                 super().exec(engine)
                 return
             return
-        raise BadDataType("JUMPIFEQ: Bad operands type!")
+        raise BadDataType(f"JUMPIFEQ: Bad operands type! Instruction order: {self.order}")
 
 
 class InstructionJUMPIFNEQS(InstructionJUMP):
 
     def exec(self, engine):
+        label = self.args[ArgIndexes.ARG1].value
+        self._check_if_label_exist(label, engine)
+
         if not engine.stack_data:
-            raise MissingValueError("JUMPIFNEQS: empty stack!")
+            raise MissingValueError(f"JUMPIFNEQS: empty stack! Instruction order: {self.order}")
         symbol2 = engine.stack_data.pop()
 
         if not engine.stack_data:
-            raise MissingValueError("JUMPIFNEQS: empty stack!")
+            raise MissingValueError(f"JUMPIFNEQS: empty stack! Instruction order: {self.order}")
         symbol1 = engine.stack_data.pop()
 
         is_nil = symbol1.data_type == ArgDataType.NIL or symbol2.data_type == ArgDataType.NIL
@@ -196,4 +211,4 @@ class InstructionJUMPIFNEQS(InstructionJUMP):
                 super().exec(engine)
                 return
             return
-        raise BadDataType("JUMPIFNEQ: Bad operands type!")
+        raise BadDataType(f"JUMPIFNEQ: Bad operands type! Instruction order: {self.order}")

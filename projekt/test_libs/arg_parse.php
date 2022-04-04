@@ -139,7 +139,7 @@ class ArgParser {
             }
         }
 
-        if(!file_exists($this->jexampath)){
+        if(!file_exists($this->jexampath) && $this->parse_only){
             if(!$this->int_only) {
                 fwrite(STDERR,"ERROR: Jexamxml directory does not exist!\n");
                 exit(FILE_OR_PATH_ERROR);

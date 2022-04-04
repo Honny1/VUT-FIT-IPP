@@ -38,11 +38,11 @@ abstract class AbstractTest {
     
     abstract public function exec_test();
     
-    protected function test_parse() {
+    protected function test_parse($rc=0) {
         $command_pattern = PHP . ' "%s" < "%s" > "%s" 2> "%s"';
         $parse_command = sprintf($command_pattern, $this->arg_parser->parser_script, $this->src, $this->std_out, $this->std_err);
         exec($parse_command, $output, $this->returned_rc);
-        if($this->returned_rc == $this->expect_rc)
+        if($this->returned_rc == $rc)
             $this->result = "PASS";
     }
 
@@ -53,7 +53,7 @@ abstract class AbstractTest {
         $output = null;
         $jexamxml_rc = null;
         exec($jexamxml_command, $output, $jexamxml_rc);
-        unlink("xml_diff.xml");
+        if (file_exists("xml_diff.xml")) unlink("xml_diff.xml");
         if($this->returned_rc != 0)
             $this->result = "FAIL";
     }
@@ -66,6 +66,8 @@ abstract class AbstractTest {
         exec($interpretr_command, $output, $this->returned_rc);
         if($this->returned_rc == $this->expect_rc)
             $this->result = "PASS";
+        else
+            $this->result = "FAIL";
     }
 
     protected function diff_int_out() {
@@ -113,7 +115,7 @@ abstract class AbstractTest {
         $details->appendChild($summary);
 
         if($this->result == "ERROR") {
-            $err_msg = $dom_tree->createElement("p", $this->error_msg);
+            $err_msg = $dom_tree->createElement("p", htmlspecialchars($this->error_msg));
             $details->appendChild($err_msg);
             return;
         }
@@ -125,7 +127,7 @@ abstract class AbstractTest {
 
         $summary_expected_er = $dom_tree->createElement("summary", "Expected error code:");
         $details_expected_er->appendChild($summary_expected_er);
-        $pre_expected_er = $dom_tree->createElement("pre", $this->expect_rc);
+        $pre_expected_er = $dom_tree->createElement("pre", htmlspecialchars($this->expect_rc));
         $details_expected_er->appendChild($pre_expected_er);
         
         $details->appendChild($details_expected_er);
@@ -137,7 +139,7 @@ abstract class AbstractTest {
 
         $summary_received_er = $dom_tree->createElement("summary", "Received error code:");
         $details_received_er->appendChild($summary_received_er);
-        $pre_received_er = $dom_tree->createElement("pre", $this->returned_rc);
+        $pre_received_er = $dom_tree->createElement("pre", htmlspecialchars($this->returned_rc));
         $details_received_er->appendChild($pre_received_er);
 
         $details->appendChild($details_received_er);
@@ -149,7 +151,7 @@ abstract class AbstractTest {
 
         $summary_std_er = $dom_tree->createElement("summary", "Received std error:");
         $details_std_er->appendChild($summary_std_er);
-        $pre_std_er = $dom_tree->createElement("pre", file_get_contents($this->std_err));
+        $pre_std_er = $dom_tree->createElement("pre", htmlspecialchars(file_get_contents($this->std_err)));
         $details_std_er->appendChild($pre_std_er);
 
         $details->appendChild($details_std_er);
@@ -161,7 +163,7 @@ abstract class AbstractTest {
 
         $summary_expected_out = $dom_tree->createElement("summary", "Expected output:");
         $details_expected_out->appendChild($summary_expected_out);
-        $pre_expected_out = $dom_tree->createElement("pre", file_get_contents($this->out));
+        $pre_expected_out = $dom_tree->createElement("pre", htmlspecialchars(file_get_contents($this->out)));
         $details_expected_out->appendChild($pre_expected_out);
 
         $details->appendChild($details_expected_out);
@@ -173,7 +175,7 @@ abstract class AbstractTest {
 
         $summary_received_out = $dom_tree->createElement("summary", "Received output:");
         $details_received_out->appendChild($summary_received_out);
-        $pre_received_out = $dom_tree->createElement("pre", file_get_contents($this->std_out));
+        $pre_received_out = $dom_tree->createElement("pre", htmlspecialchars(file_get_contents(file_exists($this->std_out_int)? $this->std_out_int: $this->std_out)));
         $details_received_out->appendChild($pre_received_out);
         
         $details->appendChild($details_received_out);
@@ -185,7 +187,7 @@ abstract class AbstractTest {
 
             $summary_received_out = $dom_tree->createElement("summary", "Received diff:");
             $details_received_out->appendChild($summary_received_out);
-            $pre_received_out = $dom_tree->createElement("pre", file_get_contents($this->std_out_diff));
+            $pre_received_out = $dom_tree->createElement("pre", htmlspecialchars(file_get_contents($this->std_out_diff)));
             $details_received_out->appendChild($pre_received_out);
 
             $details->appendChild($details_received_out);
@@ -204,7 +206,7 @@ abstract class AbstractTest {
 
         $summary_in_data_code = $dom_tree->createElement("summary", "Input code:");
         $details_in_data_code->appendChild($summary_in_data_code);
-        $pre_in_data_code = $dom_tree->createElement("pre", file_get_contents($this->src));
+        $pre_in_data_code = $dom_tree->createElement("pre", htmlspecialchars(file_get_contents($this->src)));
         $details_in_data_code->appendChild($pre_in_data_code);
         
         $details_in_data->appendChild($details_in_data_code);
@@ -215,7 +217,7 @@ abstract class AbstractTest {
 
         $summary_in_data_user = $dom_tree->createElement("summary", "Input user:");
         $details_in_data_user->appendChild($summary_in_data_user);
-        $pre_in_data_user = $dom_tree->createElement("pre", file_get_contents($this->in));
+        $pre_in_data_user = $dom_tree->createElement("pre", htmlspecialchars(file_get_contents($this->in)));
         $details_in_data_user->appendChild($pre_in_data_user);
         
         $details_in_data->appendChild($details_in_data_user);
@@ -231,7 +233,6 @@ class Test extends AbstractTest {
 
     public function exec_test() {
         $this->test_parse();
-        if($this->result != "FAIL") $this->diff_parse_out();
         if($this->result != "FAIL") $this->test_int($this->std_out);
         if($this->result != "FAIL") $this->diff_int_out();
     }
@@ -241,7 +242,7 @@ class Test extends AbstractTest {
 class TestOnlyParse extends AbstractTest {
 
     public function exec_test() {
-        $this->test_parse();
+        $this->test_parse($this->expect_rc);
         if($this->result != "FAIL") $this->diff_parse_out();
     }
 

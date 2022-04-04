@@ -26,7 +26,7 @@ class Engine:
         for i_num, instruction in self.instructions.items():
             if type(instruction) is InstructionLABEL:
                 if instruction.args[0].value in labels.keys():
-                    raise SemanticError("Redefine label!")
+                    raise SemanticError(f"Redefine label! Instruction order: {instruction.order}")
                 labels[instruction.args[0].value] = i_num
         return labels
 
@@ -35,14 +35,17 @@ class Engine:
 
     def pop_instruction_pointer_from_call_stack(self):
         if not self.stack_call:
-            raise MissingValueError("Call stack is empty!")
+            raise MissingValueError((
+                f"Call stack is empty! Instruction order:"
+                f" {self.instructions[self.instruction_pointer].order}"
+            ))
         self.instruction_pointer = self.stack_call.pop()
 
     def exec(self):
         while self.instruction_pointer < len(self.instructions):
             instruction = self.instructions[self.instruction_pointer]
-            self.instruction_pointer += 1
             instruction.exec(self)
+            self.instruction_pointer += 1
             if self.stats is not None:
                 self.stats.update_stats(self, instruction)
 
@@ -52,18 +55,27 @@ class Engine:
 
         if var.frame == ArgFrame.TF:
             if self.TF is None:
-                raise NotExistFrameError("TF: Frame not exists!")
+                raise NotExistFrameError((
+                    f"TF: Frame not exists! Instruction order:"
+                    f" {self.instructions[self.instruction_pointer].order}"
+                ))
             return var.value in self.TF
 
         if var.frame == ArgFrame.LF:
             if not self.stack_LF:
-                raise NotExistFrameError("LF: Empty Frame stack!")
+                raise NotExistFrameError((
+                    f"LF: Empty Frame stack! Instruction order:"
+                    f" {self.instructions[self.instruction_pointer].order}"
+                ))
             return var.value in self.stack_LF[-1]
         return False
 
     def set_var(self, var, value, new_var=False):
         if not new_var and not self.is_var_exist(var):
-            raise UndefinedVar(f"VAR: {var.value} is undefined!")
+            raise UndefinedVar((
+                f"VAR: {var.value} is undefined! Instruction order:"
+                f" {self.instructions[self.instruction_pointer].order}"
+            ))
         if var.frame == ArgFrame.GF:
             self.GF[var.value] = value
             return
@@ -79,7 +91,10 @@ class Engine:
 
     def get_var(self, var):
         if not self.is_var_exist(var):
-            raise UndefinedVar(f"VAR: {var.value} is undefined!")
+            raise UndefinedVar((
+                f"VAR: {var.value} is undefined! Instruction order:"
+                f" {self.instructions[self.instruction_pointer].order}"
+            ))
         if var.frame == ArgFrame.GF:
             return self.GF[var.value]
         if var.frame == ArgFrame.TF:
@@ -94,7 +109,10 @@ class Engine:
         if none_enable:
             return out
         if out is None:
-            raise UndefinedVar(f"Symbol or var is undefined! {out}")
+            raise MissingValueError((
+                f"Symbol or var is undefined! {out}, Instruction order:"
+                f" {self.instructions[self.instruction_pointer].order}"
+            ))
         return out
 
     def print_info(self):

@@ -14,7 +14,9 @@ class Instruction:
         self.args = args
         self.order = order
         if len(args) != len(self.expected_args):
-            raise UnexpectedXMLStructureError("Unexpected number of operands!")
+            raise UnexpectedXMLStructureError(
+                f"Unexpected number of operands! Instruction order: {self.order}"
+            )
 
     def exec(self, engine):
         raise NotImplementedError
@@ -27,19 +29,27 @@ class Instruction:
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
 
         if symbol1.data_type != ArgDataType.INT or symbol2.data_type != ArgDataType.INT:
-            raise BadDataType("MATH INSTRUCTION: Support just INT!")
+            raise BadDataType(
+                f"MATH INSTRUCTION: Support just INT! Instruction order: {self.order}"
+            )
         return (symbol1, symbol2)
 
     def _get_operands_for_math_stack_instruction(self, engine):
         if not engine.stack_data:
-            raise MissingValueError("STACK MATH OPERATION: empty stack!")
+            raise MissingValueError(
+                f"STACK MATH OPERATION: empty stack! Instruction order: {self.order}"
+                )
         symbol2 = engine.stack_data.pop()
         if not engine.stack_data:
-            raise MissingValueError("STACK MATH OPERATION: empty stack!")
+            raise MissingValueError(
+                f"STACK MATH OPERATION: empty stack! Instruction order: {self.order}"
+            )
         symbol1 = engine.stack_data.pop()
 
         if symbol1.data_type != ArgDataType.INT or symbol2.data_type != ArgDataType.INT:
-            raise BadDataType("MATH INSTRUCTION: Support just INT!")
+            raise BadDataType(
+                f"MATH INSTRUCTION: Support just INT! Instruction order: {self.order}"
+            )
         return (symbol1, symbol2)
 
     def _get_operands_for_compare_instruction(self, engine, enable_nil=False):
@@ -50,19 +60,29 @@ class Instruction:
         if enable_nil:
             supporeted_types = (ArgDataType.INT, ArgDataType.BOOL, ArgDataType.STR, ArgDataType.NIL)
         if symbol1.data_type not in supporeted_types or symbol2.data_type not in supporeted_types:
-            raise BadDataType("COMPARE INSTRUCTION: Support just INT, BOOL, STRING!")
+            raise BadDataType((
+                f"COMPARE INSTRUCTION: Support just INT, BOOL, STRING!"
+                f" Instruction order: {self.order}"
+            ))
         is_one_nil = symbol1.data_type == ArgDataType.NIL or symbol2.data_type == ArgDataType.NIL
         if symbol1.data_type != symbol2.data_type and not is_one_nil:
-            raise BadDataType("COMPARE INSTRUCTION: Cant compare different types")
+            raise BadDataType((
+                f"COMPARE INSTRUCTION: Cant compare different types!"
+                f" Instruction order: {self.order}"
+            ))
 
         return (symbol1, symbol2)
 
     def _get_operands_for_compare_stack_instruction(self, engine, enable_nil=False):
         if not engine.stack_data:
-            raise MissingValueError("STACK COMPARE OPERATION: empty stack!")
+            raise MissingValueError(
+                f"STACK COMPARE OPERATION: empty stack! Instruction order: {self.order}"
+            )
         symbol2 = engine.stack_data.pop()
         if not engine.stack_data:
-            raise MissingValueError("STACK COMPARE OPERATION: empty stack!")
+            raise MissingValueError(
+                f"STACK COMPARE OPERATION: empty stack! Instruction order: {self.order}"
+            )
         symbol1 = engine.stack_data.pop()
 
         supporeted_types = (ArgDataType.INT, ArgDataType.BOOL, ArgDataType.STR)
@@ -70,10 +90,16 @@ class Instruction:
             supporeted_types = (ArgDataType.INT, ArgDataType.BOOL, ArgDataType.STR, ArgDataType.NIL)
 
         if symbol1.data_type not in supporeted_types or symbol2.data_type not in supporeted_types:
-            raise BadDataType("COMPARE INSTRUCTION: Support just INT, BOOL, STRING!")
+            raise BadDataType((
+                f"COMPARE INSTRUCTION: Support just INT, BOOL, STRING!"
+                f" Instruction order: {self.order}"
+            ))
         is_one_nil = symbol1.data_type == ArgDataType.NIL or symbol2.data_type == ArgDataType.NIL
         if symbol1.data_type != symbol2.data_type and not is_one_nil:
-            raise BadDataType("COMPARE INSTRUCTION: Cant compare different types")
+            raise BadDataType((
+                f"COMPARE INSTRUCTION: Cant compare different types!"
+                f" Instruction order: {self.order}"
+            ))
 
         return (symbol1, symbol2)
 
@@ -102,7 +128,7 @@ class InstructionPUSHFRAME(Instruction):
 
     def exec(self, engine):
         if engine.TF is None:
-            raise NotExistFrameError("PUSHFRAME: frame not exist!")
+            raise NotExistFrameError(f"PUSHFRAME: frame not exist! Instruction order: {self.order}")
         engine.stack_LF.append(engine.TF)
         engine.TF = None
 
@@ -111,7 +137,9 @@ class InstructionPOPFRAME(Instruction):
 
     def exec(self, engine):
         if not engine.stack_LF:
-            raise NotExistFrameError("POPFRAME: empty frame stack!")
+            raise NotExistFrameError(
+                f"POPFRAME: empty frame stack! Instruction order: {self.order}"
+            )
         engine.TF = engine.stack_LF.pop()
 
 
@@ -121,7 +149,7 @@ class InstructionDEFVAR(Instruction):
     def exec(self, engine):
         var = self.args[ArgIndexes.ARG1]
         if engine.is_var_exist(var):
-            raise SemanticError("DEFVAR: Variable exist")
+            raise SemanticError(f"DEFVAR: Variable exist! Instruction order: {self.order}")
         engine.create_var(var, None)
 
 
@@ -138,7 +166,7 @@ class InstructionPOPS(Instruction):
 
     def exec(self, engine):
         if not engine.stack_data:
-            raise MissingValueError("POPS: empty stack!")
+            raise MissingValueError(f"POPS: empty stack! Instruction order: {self.order}")
         engine.set_var(self.args[ArgIndexes.ARG1], engine.stack_data.pop())
 
 
@@ -178,7 +206,7 @@ class InstructionIDIV(Instruction):
     def exec(self, engine):
         symbol1, symbol2 = self._get_operands_for_math_instruction(engine)
         if symbol2.value == 0:
-            raise BadOperandValue("IDIV: Division ZERO!")
+            raise BadOperandValue(f"IDIV: Division ZERO! Instruction order: {self.order}")
         result = symbol1.value // symbol2.value
         self._save_symbol(engine, Symbol(ArgDataType.INT, result))
 
@@ -219,7 +247,7 @@ class InstructionAND(Instruction):
     def exec(self, engine):
         symbol1, symbol2 = self._get_operands_for_compare_instruction(engine)
         if symbol1.data_type != ArgDataType.BOOL or symbol2.data_type != ArgDataType.BOOL:
-            raise BadDataType("AND: Support just BOOL!")
+            raise BadDataType(f"AND: Support just BOOL! Instruction order: {self.order}")
 
         result = symbol1.value and symbol2.value
         self._save_symbol(engine, Symbol(ArgDataType.BOOL, result))
@@ -231,7 +259,7 @@ class InstructionOR(Instruction):
     def exec(self, engine):
         symbol1, symbol2 = self._get_operands_for_compare_instruction(engine)
         if symbol1.data_type != ArgDataType.BOOL or symbol2.data_type != ArgDataType.BOOL:
-            raise BadDataType("OR: Support just BOOL!")
+            raise BadDataType(f"OR: Support just BOOL! Instruction order: {self.order}")
 
         result = symbol1.value or symbol2.value
         self._save_symbol(engine, Symbol(ArgDataType.BOOL, result))
@@ -243,7 +271,7 @@ class InstructionNOT(Instruction):
     def exec(self, engine):
         symbol = engine.get_symbol_value(self.args[ArgIndexes.ARG2])
         if symbol.data_type != ArgDataType.BOOL:
-            raise BadDataType("NOT: Support just BOOL!")
+            raise BadDataType(f"NOT: Support just BOOL! Instruction order: {self.order}")
 
         result = not symbol.value
         self._save_symbol(engine, Symbol(ArgDataType.BOOL, result))
@@ -255,11 +283,14 @@ class InstructionINT2CHAR(Instruction):
     def exec(self, engine):
         symbol = engine.get_symbol_value(self.args[ArgIndexes.ARG2])
         if symbol.data_type != ArgDataType.INT:
-            raise BadDataType("INT2CHAR: Support just INT!")
+            raise BadDataType(f"INT2CHAR: Support just INT! Instruction order: {self.order}")
         try:
             self._save_symbol(engine, Symbol(ArgDataType.STR, chr(symbol.value)))
-        except Exception:
-            raise BadStringOperation(f"INT2CHAR: Bad int to char corversion: {symbol.value}")
+        except (TypeError, ValueError):
+            raise BadStringOperation((
+                f"INT2CHAR: Bad int to char corversion: {symbol.value},"
+                f" Instruction order: {self.order}"
+            ))
 
 
 class InstructionSTRING2INT(Instruction):
@@ -270,14 +301,23 @@ class InstructionSTRING2INT(Instruction):
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
 
         if symbol1.data_type != ArgDataType.STR or symbol2.data_type != ArgDataType.INT:
-            raise BadDataType("STRING2INT: Bad type of operands!")
+            raise BadDataType(f"STRING2INT: Bad type of operands! Instruction order: {self.order}")
 
+        if symbol2.value < 0:
+            raise BadStringOperation(
+                f"STRING2INT: Index out of the range! Instruction order: {self.order}"
+            )
         try:
             self._save_symbol(engine, Symbol(ArgDataType.INT, ord(symbol1.value[symbol2.value])))
         except IndexError:
-            raise BadStringOperation("STRING2INT: Index out of the range!")
-        except Exception:
-            raise BadStringOperation(f"Bad int to char corversion: {symbol1.value[symbol2.value]}")
+            raise BadStringOperation(
+                f"STRING2INT: Index out of the range! Instruction order: {self.order}"
+            )
+        except (TypeError, ValueError):
+            raise BadStringOperation((
+                f"Bad int to char corversion: {symbol1.value[symbol2.value]}, "
+                f"Instruction order: {self.order}"
+            ))
 
 
 class InstructionREAD(Instruction):
@@ -287,29 +327,30 @@ class InstructionREAD(Instruction):
         data = None
         try:
             if engine.user_input == "<stdin>":
-                data = input().rstrip()
+                data = input()
             if not isinstance(engine.user_input, str):
-                data = engine.user_input.readline().rstrip()
+                data = engine.user_input.readline()
         except Exception:
             data = None
         type_ = self.args[ArgIndexes.ARG2]
 
-        if data is None:
+        if data is None or data == "":
             self._save_symbol(engine, Symbol(ArgDataType.NIL, None))
             return
         if type_.value == ArgDataType.BOOL:
-            str_to_bool = {"true": True, "false": False, True: True, False: False}
+            str_to_bool = {"true": True, "false": False}
+            data = data.rstrip().lower()
             if data not in str_to_bool:
-                self._save_symbol(engine, Symbol(ArgDataType.NIL, None))
+                self._save_symbol(engine, Symbol(ArgDataType.BOOL, str_to_bool["false"]))
             else:
                 self._save_symbol(engine, Symbol(ArgDataType.BOOL, str_to_bool[data]))
             return
         if type_.value == ArgDataType.STR:
-            self._save_symbol(engine, Symbol(ArgDataType.STR, data))
+            self._save_symbol(engine, Symbol(ArgDataType.STR, data.rstrip()))
             return
         if type_.value == ArgDataType.INT:
             try:
-                int_val = int(data)
+                int_val = int(data.rstrip())
                 self._save_symbol(engine, Symbol(ArgDataType.INT, int_val))
             except ValueError:
                 self._save_symbol(engine, Symbol(ArgDataType.NIL, None))
@@ -339,7 +380,10 @@ class InstructionCONCAT(Instruction):
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
 
         if symbol1.data_type != ArgDataType.STR or symbol2.data_type != ArgDataType.STR:
-            raise BadDataType("CONCAT: Bad type of operands! Just string are supported.")
+            raise BadDataType((
+                f"CONCAT: Bad type of operands! Just string are supported."
+                f" Instruction order: {self.order}"
+            ))
         self._save_symbol(engine, Symbol(ArgDataType.STR, f"{symbol1.value}{symbol2.value}"))
 
 
@@ -350,7 +394,10 @@ class InstructionSTRLEN(Instruction):
         symbol = engine.get_symbol_value(self.args[ArgIndexes.ARG2])
 
         if symbol.data_type != ArgDataType.STR:
-            raise BadDataType("STRLEN: Bad type of operands! Just string is supported.")
+            raise BadDataType((
+                f"STRLEN: Bad type of operands! Just string is supported. "
+                f"Instruction order: {self.order}"
+            ))
         self._save_symbol(engine, Symbol(ArgDataType.INT, len(symbol.value)))
 
 
@@ -361,13 +408,18 @@ class InstructionGETCHAR(Instruction):
         symbol1 = engine.get_symbol_value(self.args[ArgIndexes.ARG2])
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
 
-        if symbol1.data_type != ArgDataType.INT or symbol2.data_type != ArgDataType.STR:
-            raise BadDataType("GETCHAR: Bad type of operands!")
-
+        if symbol2.data_type != ArgDataType.INT or symbol1.data_type != ArgDataType.STR:
+            raise BadDataType(f"GETCHAR: Bad type of operands! Instruction order: {self.order}")
+        if symbol2.value < 0:
+            raise BadStringOperation(
+                f"GETCHAR: Index out of the range! Instruction order: {self.order}"
+            )
         try:
-            self._save_symbol(engine, Symbol(ArgDataType.STR, symbol2.value[symbol1.value]))
+            self._save_symbol(engine, Symbol(ArgDataType.STR, symbol1.value[symbol2.value]))
         except IndexError:
-            raise BadStringOperation("GETCHAR: Index out of the range!")
+            raise BadStringOperation(
+                f"GETCHAR: Index out of the range! Instruction order: {self.order}"
+            )
 
 
 class InstructionSETCHAR(Instruction):
@@ -379,15 +431,19 @@ class InstructionSETCHAR(Instruction):
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
 
         if var is None:
-            raise MissingValueError("SETCHAR: Undefined value!")
+            raise MissingValueError(f"SETCHAR: Undefined value! Instruction order: {self.order}")
 
         type_of_symbol1 = symbol1.data_type != ArgDataType.INT
         type_of_symbol2 = symbol2.data_type != ArgDataType.STR
-        type_of_var = var.data_type == ArgDataType.STR
+        type_of_var = var.data_type != ArgDataType.STR
 
         if type_of_symbol1 or type_of_symbol2 or type_of_var:
-            raise BadDataType("SETCHAR: Bad type of operands!")
+            raise BadDataType(f"SETCHAR: Bad type of operands! Instruction order: {self.order}")
 
+        if symbol1.value < 0 or symbol1.value > len(var.value)-1:
+            raise BadStringOperation(
+                f"SETCHAR: Index out of the range! Instruction order: {self.order}"
+            )
         try:
             result = var.value[:symbol1.value] + symbol2.value[0] + var.value[symbol1.value + 1:]
             self._save_symbol(engine, Symbol(ArgDataType.STR, result))
@@ -416,10 +472,13 @@ class InstructionLABEL(Instruction):
 class InstructionJUMP(Instruction):
     expected_args = [ArgType.LABEL]
 
+    def _check_if_label_exist(self, label, engine):
+        if label not in engine.labels.keys():
+            raise SemanticError(f"Undefined Label: {label} Instruction order: {self.order}")
+
     def exec(self, engine):
         label = self.args[ArgIndexes.ARG1].value
-        if label not in engine.labels.keys():
-            raise SemanticError(f"Undefined Label: {label}")
+        self._check_if_label_exist(label, engine)
         engine.instruction_pointer = engine.labels[label]
 
 
@@ -436,13 +495,15 @@ class InstructionJUMPIFEQ(InstructionJUMP):
     def exec(self, engine):
         symbol1 = engine.get_symbol_value(self.args[ArgIndexes.ARG2])
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
+        label = self.args[ArgIndexes.ARG1].value
+        self._check_if_label_exist(label, engine)
         is_nil = symbol1.data_type == ArgDataType.NIL or symbol2.data_type == ArgDataType.NIL
         if symbol1.data_type == symbol2.data_type or is_nil:
             if symbol1 == symbol2:
                 super().exec(engine)
                 return
             return
-        raise BadDataType("JUMPIFEQ: Bad operands type!")
+        raise BadDataType(f"JUMPIFEQ: Bad operands type! Instruction order: {self.order}")
 
 
 class InstructionJUMPIFNEQ(InstructionJUMP):
@@ -451,13 +512,15 @@ class InstructionJUMPIFNEQ(InstructionJUMP):
     def exec(self, engine):
         symbol1 = engine.get_symbol_value(self.args[ArgIndexes.ARG2])
         symbol2 = engine.get_symbol_value(self.args[ArgIndexes.ARG3])
+        label = self.args[ArgIndexes.ARG1].value
+        self._check_if_label_exist(label, engine)
         is_nil = symbol1.data_type == ArgDataType.NIL or symbol2.data_type == ArgDataType.NIL
         if symbol1.data_type == symbol2.data_type or is_nil:
             if symbol1 != symbol2:
                 super().exec(engine)
                 return
             return
-        raise BadDataType("JUMPIFNEQ: Bad operands type!")
+        raise BadDataType(f"JUMPIFNEQ: Bad operands type! Instruction order: {self.order}")
 
 
 class InstructionEXIT(Instruction):
@@ -466,9 +529,9 @@ class InstructionEXIT(Instruction):
     def exec(self, engine):
         symbol = engine.get_symbol_value(self.args[ArgIndexes.ARG1])
         if symbol.data_type != ArgDataType.INT:
-            raise BadDataType("EXIT: Bad operand type!")
-        if symbol.value < 0 and symbol.value > 49:
-            raise BadOperandValue("EXIT: Bad operand value!")
+            raise BadDataType(f"EXIT: Bad operand type! Instruction order: {self.order}")
+        if int(symbol.value) < 0 or int(symbol.value) > 49:
+            raise BadOperandValue(f"EXIT: Bad operand value! Instruction order: {self.order}")
         sys_exit(symbol.value)
 
 
