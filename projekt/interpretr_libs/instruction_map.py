@@ -13,6 +13,16 @@ from interpretr_libs.instructions import (
     InstructionJUMPIFEQ, InstructionJUMPIFNEQ,
 )
 
+# STACK
+from interpretr_libs.instructions_stack import (
+    InstructionCLEARS, InstructionADDS, InstructionSUBS,
+    InstructionMULS, InstructionIDIVS, InstructionLTS,
+    InstructionGTS, InstructionEQS, InstructionANDS,
+    InstructionORS, InstructionNOTS, InstructionINT2CHARS,
+    InstructionSTRING2INTS, InstructionJUMPIFEQS, InstructionJUMPIFNEQS,
+)
+
+
 OPCODE_TO_INSTRUCTION = {
     "CREATEFRAME": InstructionCREATEFRAME,
     "PUSHFRAME": InstructionPUSHFRAME,
@@ -49,4 +59,20 @@ OPCODE_TO_INSTRUCTION = {
     "SETCHAR": InstructionSETCHAR,
     "JUMPIFEQ": InstructionJUMPIFEQ,
     "JUMPIFNEQ": InstructionJUMPIFNEQ,
+    # STACK
+    "CLEARS": InstructionCLEARS,
+    "ADDS": InstructionADDS,
+    "SUBS": InstructionSUBS,
+    "MULS": InstructionMULS,
+    "IDIVS": InstructionIDIVS,
+    "LTS": InstructionLTS,
+    "GTS": InstructionGTS,
+    "EQS": InstructionEQS,
+    "ANDS": InstructionANDS,
+    "ORS": InstructionORS,
+    "NOTS": InstructionNOTS,
+    "INT2CHARS": InstructionINT2CHARS,
+    "STRI2INTS": InstructionSTRING2INTS,
+    "JUMPIFEQS": InstructionJUMPIFEQS,
+    "JUMPIFNEQS": InstructionJUMPIFNEQS,
 }

@@ -19,6 +19,12 @@ class ArgFrame:
     LF = "LF"
 
 
+class ArgIndexes:
+    ARG1 = 0
+    ARG2 = 1
+    ARG3 = 2
+
+
 class Argument:
     def __init__(self, type, value):
         self.type = type
