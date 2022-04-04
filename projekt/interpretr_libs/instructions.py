@@ -9,9 +9,10 @@ from interpretr_libs.expections import NotExistFrameError, SemanticError
 class Instruction:
     expected_args = []
 
-    def __init__(self, opcode, args):
+    def __init__(self, opcode, args, order):
         self.opcode = opcode
         self.args = args
+        self.order = order
         if len(args) != len(self.expected_args):
             raise UnexpectedXMLStructureError("Unexpected number of operands!")
 

@@ -1,5 +1,5 @@
 import argparse
-from sys import stdin, stderr
+from sys import stdin, stderr, argv
 from interpretr_libs.error_codes import PARAMETR_ERROR
 
 
@@ -14,6 +14,16 @@ class CommandLineAPI():
         self.arguments = self._parse_arguments()
         self.source_file = self.arguments.source
         self.input_file = self.arguments.input
+        self.stats_file = self.arguments.stats
+        self.order_stats = self._get_order_stats()
+
+    def _get_order_stats(self):
+        out = list()
+        if self.arguments.insts or self.arguments.hot or self.arguments.vars:
+            for arg in argv:
+                if arg == "--insts" or arg == "--hot" or arg == "--vars":
+                    out.append(arg)
+        return out
 
     def _parse_arguments(self):
         parser = ArgumentParser(
@@ -46,7 +56,7 @@ class CommandLineAPI():
                  "File with IPPcode22. Default is standard input."
                  " The --source or --input parameters must specify at least one of them."
                  )
-                )
+            )
         parser.add_argument(
             "--input",
             action="store",
@@ -56,7 +66,32 @@ class CommandLineAPI():
                  "File with user input. Default is standard input."
                  " The --source or --input parameters must specify at least one of them."
                  )
+            )
+        parser.add_argument(
+            "--stats",
+            action="store",
+            type=argparse.FileType("w+"),
+            default=None,
+            help="Define where to store statistics"
+            )
+        parser.add_argument(
+            "--insts",
+            action="store_true",
+            help="Save the number of instructions to the file defined in --stats"
+            )
+        parser.add_argument(
+            "--hot",
+            action="store_true",
+            help="Save the hottest instructions order argument to the file defined in --stats"
+            )
+        parser.add_argument(
+            "--vars",
+            action="store_true",
+            help=(
+                "Save the maximum number of variables initialized at"
+                " one time to the file defined in --stats"
                 )
+            )
 
     def load_source(self):
         return self.source_file.read().encode()
@@ -69,3 +104,5 @@ class CommandLineAPI():
     def close_files(self):
         self.source_file.close()
         self.input_file.close()
+        if self.stats_file is not None:
+            self.stats_file.close()

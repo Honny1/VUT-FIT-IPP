@@ -10,8 +10,7 @@ class Engine:
     def __init__(self, instructions, user_input, stats=None):
         self.instructions = instructions
         self.user_input = user_input
-
-        # self.stats = stats
+        self.stats = stats
 
         self.instruction_pointer = 0
         self.GF = dict()
@@ -44,8 +43,8 @@ class Engine:
             instruction = self.instructions[self.instruction_pointer]
             self.instruction_pointer += 1
             instruction.exec(self)
-
-            # TODO stats
+            if self.stats is not None:
+                self.stats.update_stats(self, instruction)
 
     def is_var_exist(self, var):
         if var.frame == ArgFrame.GF:

@@ -29,3 +29,7 @@ class BadOperandValue(Exception):
 
 class UndefinedVar(Exception):
     exit_code = 54
+
+
+class StatsMissingFile(Exception):
+    exit_code = 10

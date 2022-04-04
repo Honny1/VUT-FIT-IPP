@@ -34,18 +34,18 @@ class ParserXML():
             if order in out.keys():
                 raise UnexpectedXMLStructureError("Duplicite order!")
 
-            out[order] = self._get_instruction(instruction)
+            out[order] = self._get_instruction(instruction, order)
 
         return {i: value for i, value in enumerate(dict(sorted(out.items())).values())}
 
-    def _get_instruction(self, instruction):
+    def _get_instruction(self, instruction, order):
         opcode = instruction.attrib.get("opcode")
         if opcode is not None:
             opcode = opcode.upper()
         if OPCODE_TO_INSTRUCTION.get(opcode, None) is None:
             raise UnexpectedXMLStructureError(f"Unknown instructions \"{opcode}\"")
         args = self._get_args(instruction)
-        instruction = OPCODE_TO_INSTRUCTION[opcode](opcode, args)
+        instruction = OPCODE_TO_INSTRUCTION[opcode](opcode, args, order)
 
         if len(instruction.args) != len(instruction.expected_args):
             raise UnexpectedXMLStructureError("Bad number of operands!")
