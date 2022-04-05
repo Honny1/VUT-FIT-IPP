@@ -45,9 +45,9 @@ class Engine:
         while self.instruction_pointer < len(self.instructions):
             instruction = self.instructions[self.instruction_pointer]
             instruction.exec(self)
-            self.instruction_pointer += 1
             if self.stats is not None:
                 self.stats.update_stats(self, instruction)
+            self.instruction_pointer += 1
 
     def is_var_exist(self, var):
         if var.frame == ArgFrame.GF:

@@ -1,3 +1,5 @@
+from interpretr_libs.expections import BadDataType, BadOperandValue
+
 
 class ArgType:
     VAR = "var"
@@ -61,14 +63,60 @@ class Symbol(Argument):
         super().__init__(ArgType.SYMBOL, value)
         self.data_type = data_type
 
+    def _is_comparable(self, _o, enable_null_compare=False):
+        supporeted_types = (ArgDataType.INT, ArgDataType.BOOL, ArgDataType.STR)
+        if enable_null_compare:
+            supporeted_types = (ArgDataType.INT, ArgDataType.BOOL, ArgDataType.STR, ArgDataType.NIL)
+        if self.data_type not in supporeted_types or _o.data_type not in supporeted_types:
+            raise BadDataType("COMPARE INSTRUCTION: Support just INT, BOOL, STRING or NIL for EQ!")
+        is_one_nil = self.data_type == ArgDataType.NIL or _o.data_type == ArgDataType.NIL
+        if self.data_type != _o.data_type and not is_one_nil:
+            raise BadDataType("COMPARE INSTRUCTION: Cant compare different types!")
+        return True
+
+    def is_bool(self, _o):
+        if self.data_type == ArgDataType.BOOL and _o.data_type == ArgDataType.BOOL:
+            return True
+        raise BadDataType("LOGICAL INSTRUCTION: Support just BOOL!")
+
+    def _is_int(self, _o):
+        if self.data_type == ArgDataType.INT and _o.data_type == ArgDataType.INT:
+            return True
+        raise BadDataType("MATH INSTRUCTION: Support just INT!")
+
     def __eq__(self, _o):
-        return self.value == _o.value and self.data_type == _o.data_type
+        self._is_comparable(_o, True)
+        return self.value == _o.value
+
+    def __ne__(self, _o):
+        self._is_comparable(_o, True)
+        return self.value != _o.value
 
     def __lt__(self, _o):
+        self._is_comparable(_o)
         return self.value < _o.value
 
     def __gt__(self, _o):
+        self._is_comparable(_o)
         return self.value > _o.value
+
+    def __add__(self, _o):
+        self._is_int(_o)
+        return Symbol(ArgDataType.INT, self.value + _o.value)
+
+    def __sub__(self, _o):
+        self._is_int(_o)
+        return Symbol(ArgDataType.INT, self.value - _o.value)
+
+    def __mul__(self, _o):
+        self._is_int(_o)
+        return Symbol(ArgDataType.INT, self.value * _o.value)
+
+    def __floordiv__(self, _o):
+        self._is_int(_o)
+        if _o.value == 0:
+            raise BadOperandValue("IDIV: Division ZERO!")
+        return Symbol(ArgDataType.INT, self.value // _o.value)
 
     def __repr__(self):
         return f"SYMBOL: {self.data_type}, {self.value}"
