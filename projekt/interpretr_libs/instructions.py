@@ -22,7 +22,7 @@ class Instruction:
         raise NotImplementedError
 
     def __repr__(self):
-        return f"{self.opcode}: {self.args}"
+        return f"{self.order}: {self.opcode}: {self.args}"
 
     def _get_symbol_operands(self, engine):
         symbol1 = engine.get_symbol_value(self.args[ArgIndexes.ARG2])

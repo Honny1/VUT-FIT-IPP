@@ -24,7 +24,7 @@ class Engine:
 
     def get_labels(self):
         labels = dict()
-        for i_num, instruction in self.instructions.items():
+        for i_num, instruction in enumerate(self.instructions):
             if type(instruction) is InstructionLABEL:
                 if instruction.args[0].value in labels.keys():
                     raise SemanticError(f"Redefine label! Instruction order: {instruction.order}")

@@ -36,8 +36,7 @@ class ParserXML():
 
             out[order] = self._get_instruction(instruction, order)
 
-        # Seradi a precisluje instrukce
-        return {i: value for i, value in enumerate(dict(sorted(out.items())).values())}
+        return [instruction for _, instruction in sorted(out.items())]
 
     def _get_instruction(self, instruction, order):
         opcode = instruction.attrib.get("opcode")
