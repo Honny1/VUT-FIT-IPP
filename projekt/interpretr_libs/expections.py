@@ -33,3 +33,7 @@ class UndefinedVar(Exception):
 
 class StatsMissingFile(Exception):
     exit_code = 10
+
+
+class TooMuchJumps(Exception):
+    exit_code = 99

@@ -3,7 +3,7 @@ from interpretr_libs.interpretr_engine import Engine
 from interpretr_libs.parser_xml import ParserXML
 from interpretr_libs.stats import Stats
 from lxml.etree import XMLSyntaxError
-from interpretr_libs.error_codes import EXIT_OK, XML_ERROR
+from interpretr_libs.error_codes import EXIT_OK, INTERNAL_ERROR, XML_ERROR
 from sys import exit as sys_exit
 from sys import stderr
 from interpretr_libs.expections import (
@@ -54,4 +54,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as error:
+        print(f"ERROR: {error}", file=stderr)
+        exit_code = INTERNAL_ERROR
+        sys_exit(exit_code)

@@ -3,7 +3,7 @@ from interpretr_libs.expections import (
     BadDataType, BadOperandValue,
     BadStringOperation, MissingValueError, UnexpectedXMLStructureError)
 from interpretr_libs.instruction_args import ArgDataType, ArgType, Symbol, ArgIndexes
-from interpretr_libs.expections import NotExistFrameError, SemanticError
+from interpretr_libs.expections import NotExistFrameError, SemanticError, TooMuchJumps
 
 
 class Instruction:
@@ -396,9 +396,12 @@ class InstructionJUMP(Instruction):
             raise SemanticError(f"Undefined Label: {label} Instruction order: {self.order}")
 
     def exec(self, engine):
+        if engine.MAX_NUMBER_OF_JUMPS == engine.number_of_jumps:
+            raise TooMuchJumps("ERROR: Maximum number of jumps exceeded")
         label = self.args[ArgIndexes.ARG1].value
         self._check_if_label_exist(label, engine)
         engine.instruction_pointer = engine.labels[label]
+        engine.number_of_jumps += 1
 
 
 class InstructionCALL(InstructionJUMP):

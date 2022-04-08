@@ -11,7 +11,8 @@ class Engine:
         self.instructions = instructions
         self.user_input = user_input
         self.stats = stats
-
+        self.number_of_jumps = 0
+        self.MAX_NUMBER_OF_JUMPS = 10000
         self.instruction_pointer = 0
         self.GF = dict()
         self.TF = None
