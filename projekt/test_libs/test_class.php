@@ -1,6 +1,6 @@
 <?php
 define("PY", "python3.8");
-define("PHP", "php");
+define("PHP", "php8.1");
 
 abstract class AbstractTest {
     static public $num = 0;
